@@ -390,6 +390,9 @@ class LogOMFWD(LogOM):
     )
     send_as_raw = models.BooleanField(default=False)
 
+    ratelimit_interval = models.PositiveIntegerField(null=True, blank=True)
+    ratelimit_burst = models.PositiveIntegerField(null=True, blank=True)
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -401,6 +404,8 @@ class LogOMFWD(LogOM):
             'protocol': self.protocol,
             'enabled': self.enabled,
             'zip_level': self.zip_level,
+            'ratelimit_interval': self.ratelimit_interval,
+            'ratelimit_burst': self.ratelimit_burst,
             'send_as_raw': self.send_as_raw
         }
 
@@ -430,6 +435,8 @@ class LogOMFWD(LogOM):
             'type': 'Syslog',
             'zip_level': self.zip_level,
             'send_as_raw': self.send_as_raw,
+            'ratelimit_interval': self.ratelimit_interval,
+            'ratelimit_burst': self.ratelimit_burst,
             'output': self.target + ':' + str(self.port) + ' ({})'.format(self.protocol)
         }
 
@@ -451,6 +458,9 @@ class LogOMElasticSearch(LogOM):
         null=True
     )
 
+    ratelimit_interval = models.PositiveIntegerField(null=True, blank=True)
+    ratelimit_burst = models.PositiveIntegerField(null=True, blank=True)
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -461,6 +471,8 @@ class LogOMElasticSearch(LogOM):
             'servers': self.servers,
             'uid': self.uid or "",
             'pwd': self.pwd or "",
+            'ratelimit_interval': self.ratelimit_interval,
+            'ratelimit_burst': self.ratelimit_burst,
             'enabled': self.enabled
         }
 
@@ -491,6 +503,8 @@ class LogOMElasticSearch(LogOM):
             'template_id': self.template_id(),
             'mapping_id': self.mapping_id,
             'type': 'Elasticsearch',
+            'ratelimit_interval': self.ratelimit_interval,
+            'ratelimit_burst': self.ratelimit_burst,
             'output': self.servers + ' (index = {})'.format(self.index_pattern)
         }
         if self.x509_certificate:
