@@ -185,14 +185,8 @@ def cluster_create(admin_user=None, admin_password=None):
     node.api_request("services.haproxy.haproxy.configure_node")
     node.api_request("services.haproxy.haproxy.reload_service")
 
-    logger.debug("API call to fetch default yara rules")
-    node.api_request("toolkit.yara.yara.fetch_yara_rules")
-    node.api_request("toolkit.yara.yara.compile_all_rules")
-
     logger.debug("API call to reload whole darwin configuration")
     DarwinPolicy.update_buffering()
-    node.api_request("services.darwin.darwin.init_default_yara_policy")
-    node.api_request("services.darwin.darwin.init_default_ioc_policy")
     node.api_request("services.darwin.darwin.reload_all")
 
     logger.debug("API call to configure Apache GUI")
@@ -410,9 +404,5 @@ def cluster_join(master_hostname, master_ip, secret_key, ca_cert=None, cert=None
 
     logger.debug("API call to configure logrotate")
     node.api_request("services.logrotate.logrotate.reload_conf")
-
-    # Compile all Inspection policy rules on local node
-    logger.debug("API call to compile all Inspection Policies locally")
-    node.api_request("toolkit.yara.yara.compile_all_rules")
 
     return True
