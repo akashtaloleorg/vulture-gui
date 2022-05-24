@@ -975,6 +975,8 @@ class Frontend(models.Model):
                 logger.error("Access_Control::edit: API error while trying to "
                              "restart HAProxy service : {}".format(api_res.get('message')))
 
+        Cluster.api_request("services.pf.pf.gen_config")
+
     @staticmethod
     def str_attrs():
         """ List of attributes required by __str__ method """
@@ -1288,13 +1290,6 @@ class Frontend(models.Model):
         if not header_list:
             header_list = self.headers.all()
 
-        serialized_blwl_list = []
-
-        if self.mode == "http":
-            blwl_list = self.blacklistwhitelist_set.all()
-
-            for blwl_obj in blwl_list:
-                serialized_blwl_list.append(blwl_obj.generate_conf())
 
         reputation_database_v4 = None
         reputation_database_v6 = None
@@ -1746,6 +1741,8 @@ class Frontend(models.Model):
             node.api_request("services.haproxy.haproxy.build_conf", self.id)
             # Add node to nodes, it's a set (unicity implicitly handled)
             nodes.add(node)
+
+        Cluster.api_request("services.pf.pf.gen_config")
         return nodes
 
     def enable(self):
@@ -1754,6 +1751,7 @@ class Frontend(models.Model):
         if not self.enabled:
             raise ServiceError("Cannot start a disabled frontend.", "haproxy", "enable frontend",
                                traceback="Please edit, enable and save a frontend to start-it.")
+
         """ If it is an Rsyslog only conf, start rsyslog """
         if self.rsyslog_only_conf:
             nodes = self.get_nodes()
@@ -1762,15 +1760,18 @@ class Frontend(models.Model):
                 if not api_res.get('status'):
                     raise ServiceStartError("API request failure on node '{}'".format(node.name), "rsyslog",
                                             traceback=api_res.get('message'))
+
             return "Start rsyslog service asked on nodes {}".format(",".join([n.name for n in nodes]))
 
         elif self.filebeat_only_conf:
             nodes = self.get_nodes()
+
             for node in nodes:
                 api_res = node.api_request("services.filebeat.filebeat.start_service")
                 if not api_res.get('status'):
                     raise ServiceStartError("API request failure on node '{}'".format(node.name), "filebeat",
                                             traceback=api_res.get('message'))
+
             return "Start filebeat service asked on nodes {}".format(",".join([n.name for n in nodes]))
 
         else:
@@ -1780,13 +1781,17 @@ class Frontend(models.Model):
                 if not api_res.get('status'):
                     raise ServiceStartError("API request failure on node '{}'".format(node.name), "haproxy",
                                             traceback=api_res.get('message'))
+
             return "Start frontend '{}' asked on nodes {}".format(self.name, ",".join([n.name for n in nodes]))
 
+
     def disable(self):
+
         """ Disable frontend in HAProxy, by management socket """
         if not self.enabled:
             return "This frontend is already disabled."
-        """ If it is an Rsyslog / Filebeat only conf, try to start service """
+
+        """ Cannot stop Rsyslog / Filebeat only frontend """
         if self.rsyslog_only_conf:
             raise ServiceError("Cannot hot disable an Rsyslog only frontend.", "rsyslog", "disable frontend",
                                traceback="Please edit, disable and save the frontend.")
@@ -1800,6 +1805,7 @@ class Frontend(models.Model):
                 if not api_res.get('status'):
                     raise ServiceStartError("API request failure on node '{}'".format(node.name), "haproxy",
                                             traceback=api_res.get('message'))
+
             return "Stop frontend '{}' asked on nodes {}".format(self.name, ",".join([n.name for n in nodes]))
 
     @property
