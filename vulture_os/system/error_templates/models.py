@@ -259,8 +259,8 @@ from the upstream server or application.</p>
             'frontends': [str(frontend) for frontend in self.frontend_set.all()]
         }
 
-    def to_dict(self):
-        return model_to_dict(self)
+    def to_dict(self, fields=None):
+        return model_to_dict(self, fields=fields)
 
     def get_base_filename(self, code):
         return "{}_{}.html".format(self.name, code)

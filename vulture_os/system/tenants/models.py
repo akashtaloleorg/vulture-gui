@@ -23,6 +23,7 @@ __email__ = "contact@vultureproject.org"
 __doc__ = 'Perimeter Configuration main models'
 
 from django.utils.translation import ugettext_lazy as _
+from django.forms.models import model_to_dict
 from djongo import models
 
 # Extern modules imports
@@ -46,12 +47,10 @@ class Tenants(models.Model):
     def __str__(self):
         return "Tenants config {}".format(self.name)
 
-    def to_dict(self):
-        result = {
-            'id': str(self.id),
-            'name': self.name
-        }
-
+    def to_dict(self, fields=None):
+        result = model_to_dict(self, fields=fields)
+        if not fields or "id" in fields:
+            result['id'] = str(result['id'])
         return result
 
     def to_template(self):
