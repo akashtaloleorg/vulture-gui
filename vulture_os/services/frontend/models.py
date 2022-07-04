@@ -1045,12 +1045,6 @@ class Frontend(models.Model):
             if self.mode == "http":
                 for header in self.headers.all():
                     result['headers'].append(header.to_template())
-            
-
-                elif self.api_parser_type == "proofpoint_pod":
-                    result['proofpoint_pod_uri'] = self.proofpoint_pod_uri
-                    result['proofpoint_pod_cluster_id'] = self.proofpoint_pod_cluster_id
-                    result['proofpoint_pod_token'] = self.proofpoint_pod_token
 
         if self.enable_logging_reputation:
             if not fields or "reputation_contexts" in fields:
